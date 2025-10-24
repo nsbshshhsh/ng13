@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giám Sát Nồng Độ Khí Gas</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Giám Sát Nồng Độ Khí Gas</h1>
+      <p class="subtitle">Hệ thống theo dõi thời gian thực</p>
+
+      <!-- KHU VỰC HIỂN THỊ GIÁ TRỊ -->
+      <div class="card">
+        <h2>Nồng Độ Hiện Tại</h2>
+        <p class="note">Cập nhật mỗi giây</p>
+
+        <div class="value-box">
+          <span id="ppm-value" class="gas-value">0</span>
+          <span class="unit">ppm</span>
+        </div>
+        <div id="status-badge" class="status safe">An toàn</div>
+
+        <div class="thresholds">
+          <p>Ngưỡng cảnh báo: <strong>2000 ppm</strong></p>
+          <p>Ngưỡng nguy hiểm: <strong>2500 ppm</strong></p>
+        </div>
+      </div>
+
+      <!-- KHU VỰC ĐIỀU KHIỂN CÒI -->
+      <div class="card">
+        <h2>Điều Khiển Còi Báo Động</h2>
+        <p class="note">Bật/tắt hệ thống cảnh báo âm thanh</p>
+        <div class="buttons">
+          <button id="btnOn" class="on">🔊 Bật Còi</button>
+          <button id="btnOff" class="off">🔇 Tắt Còi</button>
+        </div>
+        <div id="buzzer-status" class="buzzer-status off">
+          <strong>Trạng thái:</strong> Còi đang <span>TẮT</span>
+        </div>
+      </div>
+
+      <!-- BIỂU ĐỒ LỊCH SỬ -->
+      <div class="card">
+        <h2>Biểu Đồ Lịch Sử</h2>
+        <p class="note">Hiển thị theo thời gian</p>
+        <canvas id="gasChart" height="100"></canvas>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
