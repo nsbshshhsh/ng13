@@ -1,0 +1,246 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <Firebase_ESP_Client.h>
+#include <PubSubClient.h>
+#include <WiFiClientSecure.h>
+#include <time.h>
+#include "addons/TokenHelper.h"
+#include "addons/RTDBHelper.h"
+
+// ======================== PHẦN CỨNG =========================
+#define MQ2_PIN 39
+#define BUZZER_PIN 23
+#define RL 10.0
+#define R0 75.0
+#define VC 5.0
+#define M -0.47
+#define B 1.40
+
+// ======================== WI-FI =============================
+#define WIFI_SSID "BM"
+#define WIFI_PASSWORD "tt69phuong"
+
+// ======================== MQTT ==============================
+const char* MQTT_BROKER = "944c54f3d9844fb5acd3ddb7387320b4.s1.eu.hivemq.cloud";
+const int   MQTT_PORT   = 8883;
+const char* MQTT_USER   = "han13";
+const char* MQTT_PASS   = "Han@1328";
+
+const char* TOPIC_PPM    = "gas_sensor/ppm";
+const char* TOPIC_STATUS = "gas_sensor/status";
+const char* TOPIC_BUZZER = "gas_sensor/buzzer";
+
+// ======================== FIREBASE ==========================
+#define API_KEY "AIzaSyAguOjQ1Yp9qm2bWLHLDaf3Bylp_JqZvLA"
+#define DATABASE_URL "gas-project-ef80a-default-rtdb.firebaseio.com"
+#define USER_EMAIL "vannguu2004@gmail.com"
+#define USER_PASSWORD "24012004"
+
+// ======================== BIẾN TOÀN CỤC ======================
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+WiFiClientSecure espClient;
+PubSubClient mqttClient(espClient);
+LiquidCrystal_I2C *lcd = nullptr;
+
+bool buzzerState = false;       // Trạng thái vật lý còi
+bool userForceOn = false;       // Người dùng bật thủ công
+bool userForceOff = false;      // Người dùng tắt thủ công
+unsigned long lastReadTime = 0;
+bool lastPublishedBuzzerState = false;
+
+const float PPM_WARNING_THRESHOLD = 2000.0;
+const float RESET_THRESHOLD = 1800.0;
+
+// ======================== GHI FIREBASE ======================
+void logToFirebase(String message, float ppm) {
+  if (!Firebase.ready()) return;
+
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) return;
+
+  char dateTime[30];
+  sprintf(dateTime, "%02d/%02d/%04d %02d:%02d:%02d",
+          timeinfo.tm_mday, timeinfo.tm_mon + 1,
+          timeinfo.tm_year + 1900, timeinfo.tm_hour,
+          timeinfo.tm_min, timeinfo.tm_sec);
+
+  String path = "/GasAlerts/" + String(millis());
+  Firebase.RTDB.setString(&fbdo, path + "/message", message);
+  Firebase.RTDB.setFloat(&fbdo, path + "/ppm", ppm);
+  Firebase.RTDB.setString(&fbdo, path + "/dateTime", dateTime);
+}
+
+// ======================== QUÉT I2C LCD ======================
+uint8_t scanI2CAddress() {
+  byte error, address;
+  uint8_t foundAddr = 0;
+  for (address = 1; address < 127; address++) {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+    if (error == 0) foundAddr = address;
+  }
+  return foundAddr;
+}
+
+// ======================== MQTT CALLBACK =====================
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  String msg;
+  for (unsigned int i = 0; i < length; i++) msg += (char)payload[i];
+  Serial.printf("MQTT receive [%s] => %s\n", topic, msg.c_str());
+
+  if (String(topic) == TOPIC_BUZZER) {
+    if (msg == "ON") {
+      // Người dùng bật thủ công
+      userForceOn = true;
+      userForceOff = false;
+      digitalWrite(BUZZER_PIN, HIGH);
+      buzzerState = true;
+      Serial.println("🔔 Còi BẬT thủ công từ web");
+    } 
+    else if (msg == "OFF") {
+      // Người dùng tắt thủ công
+      userForceOn = false;
+      userForceOff = true;
+      digitalWrite(BUZZER_PIN, LOW);
+      buzzerState = false;
+      Serial.println("🔕 Còi TẮT thủ công từ web");
+    }
+  }
+}
+
+// ======================== MQTT RECONNECT ====================
+void reconnectMQTT() {
+  while (!mqttClient.connected()) {
+    Serial.print("Connecting MQTT...");
+    String clientId = "ESP32_Gas_" + String(random(0xffff), HEX);
+    if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASS)) {
+      Serial.println(" ✅ MQTT connected");
+      mqttClient.subscribe(TOPIC_BUZZER);
+      mqttClient.publish(TOPIC_STATUS, "ESP32_online");
+    } else {
+      Serial.printf(" ❌ Failed, rc=%d. retry in 2s\n", mqttClient.state());
+      delay(2000);
+    }
+  }
+}
+
+// ======================== TÍNH PPM ===========================
+float calculatePPM(int adcValue) {
+  float Vout = adcValue * (3.3 / 4095.0);
+  if (Vout <= 0.0001) return 0.0;
+  float Rs = RL * (VC - Vout) / Vout;
+  float ratio = Rs / R0;
+  float ppm = pow(10, ((log10(ratio) - B) / M));
+  return ppm;
+}
+
+// ======================== SETUP ==============================
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22);
+
+  uint8_t lcdAddr = scanI2CAddress();
+  if (lcdAddr != 0) {
+    lcd = new LiquidCrystal_I2C(lcdAddr, 16, 2);
+    lcd->init();
+    lcd->backlight();
+    lcd->print("Gas Monitor Init");
+  }
+
+  pinMode(MQ2_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW);
+  lastPublishedBuzzerState = false;
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("WiFi connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(300);
+    Serial.print(".");
+  }
+  Serial.println("\n✅ WiFi connected: " + WiFi.localIP().toString());
+
+  espClient.setInsecure();
+  configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+
+  config.api_key = API_KEY;
+  config.database_url = DATABASE_URL;
+  auth.user.email = USER_EMAIL;
+  auth.user.password = USER_PASSWORD;
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+
+  mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+  mqttClient.setCallback(mqttCallback);
+}
+
+// ======================== LOOP ===============================
+void loop() {
+  if (!mqttClient.connected()) reconnectMQTT();
+  mqttClient.loop();
+
+  if (millis() - lastReadTime >= 1000) {
+    lastReadTime = millis();
+
+    int adcValue = analogRead(MQ2_PIN);
+    float ppm = calculatePPM(adcValue);
+    String status = (ppm > PPM_WARNING_THRESHOLD) ? "Warning" : "Safe";
+
+    Serial.printf("ADC:%d PPM:%.2f status:%s\n", adcValue, ppm, status.c_str());
+
+    mqttClient.publish(TOPIC_PPM, String(ppm, 2).c_str());
+    mqttClient.publish(TOPIC_STATUS, status.c_str());
+
+    if (lcd) {
+      lcd->clear();
+      lcd->setCursor(0, 0);
+      lcd->print("PPM:");
+      lcd->print(ppm, 0);
+      lcd->setCursor(0, 1);
+      lcd->print("Status:");
+      lcd->print(status);
+    }
+
+    // ========== LOGIC CÒI ==========
+    if (ppm > PPM_WARNING_THRESHOLD) {
+      // Gas vượt ngưỡng: bật còi bất kể trạng thái thủ công OFF
+      if (!buzzerState) {
+        digitalWrite(BUZZER_PIN, HIGH);
+        buzzerState = true;
+        userForceOff = false; // Hủy chế độ tắt thủ công (để cảnh báo an toàn)
+        logToFirebase("⚠️ Cảnh báo rò rỉ khí gas!", ppm);
+        Serial.println("🚨 Gas vượt ngưỡng → Còi bật tự động");
+      }
+    } 
+    else if (userForceOn) {
+      // Người dùng bật thủ công → giữ còi bật
+      digitalWrite(BUZZER_PIN, HIGH);
+      buzzerState = true;
+    } 
+    else if (userForceOff) {
+      // Người dùng tắt thủ công → giữ còi tắt, chỉ reset khi ppm an toàn hẳn
+      digitalWrite(BUZZER_PIN, LOW);
+      buzzerState = false;
+
+      if (ppm < RESET_THRESHOLD) {
+        userForceOff = false;
+        Serial.println("✅ Gas an toàn → trở lại chế độ tự động");
+      }
+    } 
+    else {
+      // Không có can thiệp thủ công, gas an toàn
+      digitalWrite(BUZZER_PIN, LOW);
+      buzzerState = false;
+    }
+
+    // Gửi MQTT khi còi thay đổi trạng thái
+    bool currentBuzzer = digitalRead(BUZZER_PIN);
+    if (currentBuzzer != lastPublishedBuzzerState) {
+      mqttClient.publish(TOPIC_BUZZER, currentBuzzer ? "ON" : "OFF");
+      lastPublishedBuzzerState = currentBuzzer;
+    }
+  }
+}
