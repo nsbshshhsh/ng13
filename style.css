@@ -1,0 +1,145 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f6f8fc;
+  color: #333;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 40px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 26px;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: #777;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+h2 {
+  font-size: 20px;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.note {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.value-box {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.gas-value {
+  font-size: 60px;
+  font-weight: bold;
+  color: green;
+}
+
+.unit {
+  font-size: 20px;
+  color: #333;
+}
+
+.status {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.status.safe {
+  background: #e3ffe3;
+  color: green;
+}
+.status.warning {
+  background: #fff6d9;
+  color: #c59d00;
+}
+.status.danger {
+  background: #ffe3e3;
+  color: red;
+}
+
+.thresholds {
+  text-align: right;
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 10px 0;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+
+button.on {
+  background-color: #007bff;
+}
+button.on:hover {
+  background-color: #005ecb;
+}
+button.off {
+  background-color: #111;
+}
+button.off:hover {
+  background-color: #333;
+}
+
+.buzzer-status {
+  text-align: center;
+  font-size: 15px;
+  margin-top: 8px;
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+
+.buzzer-status.on {
+  background-color: #e3ffe3;
+  color: green;
+}
+.buzzer-status.off {
+  background-color: #f5f5f5;
+  color: #666;
+}
