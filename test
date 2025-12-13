@@ -1,0 +1,136 @@
+// ================== MQTT CONFIG ==================
+const client = mqtt.connect(
+  "wss://944c54f3d9844fb5acd3ddb7387320b4.s1.eu.hivemq.cloud:8884/mqtt",
+  {
+    clientId: "web_dashboard_" + Math.random().toString(16).substr(2, 8),
+    username: "han13",
+    password: "Han@1328",
+    clean: true,
+    reconnectPeriod: 1000,
+    connectTimeout: 30000,
+    rejectUnauthorized: false,
+  }
+);
+
+// ================== ELEMENTS ==================
+const ppmValue = document.getElementById("ppm-value");
+const statusBadge = document.getElementById("status-badge");
+const buzzerStatus = document.getElementById("buzzer-status");
+const ctx = document.getElementById("gasChart").getContext("2d");
+
+// ================== CHART ==================
+const gasData = [];
+const warnThreshold = 2000;
+const dangerThreshold = 2500;
+
+const gasChart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: [
+      {
+        label: "Nồng độ gas (ppm)",
+        data: gasData,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.2)",
+        tension: 0.3,
+        fill: true,
+        pointRadius: 2,
+      },
+      {
+        label: "Ngưỡng cảnh báo",
+        data: [],
+        borderColor: "#facc15",
+        borderDash: [6, 4],
+        borderWidth: 2,
+        pointRadius: 0,
+      },
+      {
+        label: "Ngưỡng nguy hiểm",
+        data: [],
+        borderColor: "#ef4444",
+        borderDash: [6, 4],
+        borderWidth: 2,
+        pointRadius: 0,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    animation: false,
+    scales: {
+      x: {
+        type: "time",
+        time: { unit: "second", displayFormats: { second: "HH:mm:ss" } },
+        ticks: { autoSkip: true, maxTicksLimit: 10 },
+      },
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: "Nồng độ khí gas (ppm)" },
+      },
+    },
+  },
+});
+
+// ================== MQTT EVENTS ==================
+client.on("connect", () => {
+  console.log("MQTT Connected!");
+  client.subscribe([
+    "gas_sensor/ppm",
+    "gas_sensor/status",
+    "gas_sensor/buzzer",
+  ]);
+});
+
+client.on("message", (topic, message) => {
+  const msg = message.toString();
+
+  if (topic === "gas_sensor/ppm") updatePPM(parseFloat(msg));
+  else if (topic === "gas_sensor/status") {
+    statusBadge.innerText =
+      msg === "Warning"
+        ? "Cảnh báo"
+        : msg === "Danger"
+        ? "Nguy hiểm"
+        : "An toàn";
+
+    statusBadge.className =
+      msg === "Warning"
+        ? "status warning"
+        : msg === "Danger"
+        ? "status danger"
+        : "status safe";
+  } else if (topic === "gas_sensor/buzzer") {
+    buzzerStatus.className =
+      msg === "ON" ? "buzzer-status on" : "buzzer-status off";
+
+    buzzerStatus.innerHTML = `
+      <strong>Trạng thái:</strong> Còi đang <span>${
+        msg === "ON" ? "BẬT" : "TẮT"
+      }</span>
+    `;
+  }
+});
+
+// ================== UPDATE PPM + CHART ==================
+function updatePPM(ppm) {
+  ppmValue.innerText = ppm.toFixed(1);
+
+  // màu giá trị
+  if (ppm < warnThreshold) ppmValue.style.color = "#22c55e";
+  else if (ppm < dangerThreshold) ppmValue.style.color = "#eab308";
+  else ppmValue.style.color = "#dc2626";
+
+  const now = new Date();
+  gasData.push({ x: now, y: ppm });
+  gasChart.data.datasets[1].data.push({ x: now, y: warnThreshold });
+  gasChart.data.datasets[2].data.push({ x: now, y: dangerThreshold });
+
+  if (gasData.length > 10) {
+    gasData.shift();
+    gasChart.data.datasets[1].data.shift();
+    gasChart.data.datasets[2].data.shift();
+  }
+
+  gasChart.update("none");
+}
