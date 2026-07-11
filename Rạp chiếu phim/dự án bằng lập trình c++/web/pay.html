@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cổng Xác Thực Thanh Toán Giả Lập</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .pay-card {
+            background: #1e293b;
+            padding: 32px;
+            border-radius: 16px;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        h2 { margin-top: 0; color: #38bdf8; }
+        .info-box {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .info-row:last-child { margin-bottom: 0; }
+        .label { color: #94a3b8; }
+        .value { font-weight: 600; color: #fff; }
+        .btn-pay {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-pay:hover { background: #059669; }
+        .success-msg { color: #34d399; font-weight: 600; display: none; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="pay-card">
+        <h2>Cổng Thanh Toán</h2>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Bạn đang thực hiện giao dịch mua vé xem phim tại CineMax</p>
+        
+        <div class="info-box">
+            <div class="info-row">
+                <span class="label">Mã hóa đơn:</span>
+                <span class="value" id="outOrderId">---</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Phương thức:</span>
+                <span class="value" id="outMethod">---</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Số tiền:</span>
+                <span class="value" id="outAmount" style="color: #f43f5e; font-size: 1.1rem;">0đ</span>
+            </div>
+        </div>
+
+        <button class="btn-pay" id="btnSubmit" onclick="handlePaymentSubmit()">Xác Nhận Thanh Toán</button>
+        <div class="success-msg" id="successMsg">🎉 Giao dịch thành công! Bạn có thể đóng tab này và quay lại trang rạp phim.</div>
+    </div>
+
+    <script>
+        // Đọc dữ liệu truyền động từ mã QR qua URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId') || '';
+        const amount = urlParams.get('amount') || '0';
+        const method = urlParams.get('method') || 'QR';
+
+        document.getElementById('outOrderId').innerText = orderId;
+        document.getElementById('outMethod').innerText = method.toUpperCase();
+        document.getElementById('outAmount').innerText = Number(amount).toLocaleString('vi-VN') + 'đ';
+
+        async function handlePaymentSubmit() {
+            const btn = document.getElementById('btnSubmit');
+            btn.innerText = "⏳ Đang xử lý giao dịch...";
+            btn.disabled = true;
+
+            try {
+                // Đẩy thông điệp thông báo lên Python Server báo hóa đơn này đã trả tiền
+                const response = await fetch('/api/submit-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId: orderId })
+                });
+                const data = await response.json();
+                if(data.ok) {
+                    btn.style.display = 'none';
+                    const successDiv = document.getElementById('successMsg');
+                    successDiv.innerHTML = `🎉 Giao dịch thành công!<br><br>
+                        <span style="color: #94a3b8; font-weight: normal;">Mã đặt chỗ trước của bạn là:</span><br>
+                        <span style="font-size: 1.5rem; color: #f43f5e; letter-spacing: 2px;">${orderId}</span><br><br>
+                        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: normal;">Vui lòng xem chi tiết vé chính thức trên màn hình máy tính.</span>`;
+                    successDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối thanh toán:', error);
+                alert('Không thể kết nối máy chủ thanh toán!');
+                btn.innerText = "Xác Nhận Thanh Toán";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

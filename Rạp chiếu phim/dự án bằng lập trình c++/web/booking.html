@@ -1,0 +1,1248 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt Vé – CineMax</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+    <style>
+      /* ── BOOKING PAGE ── */
+      .booking-wrap {
+        display: grid;
+        grid-template-columns: 1fr 390px;
+        gap: 28px;
+        max-width: 1280px;
+        margin: 90px auto 0;
+        padding: 28px 24px 60px;
+      }
+      .steps-bar {
+        background: var(--bg-800);
+        border-bottom: 1px solid var(--glass-border);
+        padding: 16px;
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+      }
+      .steps-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-400);
+        font-size: 0.83rem;
+        font-weight: 500;
+      }
+      .step.active {
+        color: var(--text-100);
+      }
+      .step.done {
+        color: #1db954;
+      }
+      .step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.78rem;
+        transition: var(--ease-med);
+      }
+      .step.active .step-num {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+        box-shadow: 0 0 10px var(--primary-glow);
+      }
+      .step.done .step-num {
+        background: #1db954;
+        border-color: #1db954;
+        color: #fff;
+      }
+      .step-line {
+        width: 50px;
+        height: 2px;
+        background: var(--glass-border);
+        margin: 0 8px;
+      }
+      .step-line.done {
+        background: #1db954;
+      }
+
+      /* Movie header */
+      .movie-hdr {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .movie-hdr-poster {
+        width: 70px;
+        height: 105px;
+        border-radius: var(--radius-md);
+        background: var(--bg-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.8rem;
+        flex-shrink: 0;
+      }
+      .movie-hdr h2 {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-100);
+        margin-bottom: 6px;
+      }
+      .meta-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-400);
+      }
+      .chip {
+        padding: 3px 10px;
+        background: var(--bg-500);
+        border-radius: var(--radius-pill);
+      }
+      .chip.special {
+        background: rgba(245, 197, 24, 0.15);
+        color: var(--gold);
+        border: 1px solid rgba(245, 197, 24, 0.3);
+      }
+
+      /* Showtime selector */
+      .showtime-select-section {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .showtime-select-section h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-100);
+        margin-bottom: 14px;
+      }
+      .showtime-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
+      }
+      .showtime-opt {
+        padding: 12px;
+        background: var(--bg-600);
+        border: 1.5px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--ease-med);
+        text-align: center;
+      }
+      .showtime-opt:hover {
+        border-color: var(--primary);
+        background: rgba(229, 9, 20, 0.08);
+      }
+      .showtime-opt.active {
+        border-color: var(--primary);
+        background: rgba(229, 9, 20, 0.15);
+      }
+      .showtime-opt .so-time {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-100);
+      }
+      .showtime-opt .so-room {
+        font-size: 0.75rem;
+        color: var(--text-400);
+        margin-top: 2px;
+      }
+      .showtime-opt .so-avail {
+        font-size: 0.72rem;
+        color: #1db954;
+        margin-top: 4px;
+        font-weight: 600;
+      }
+      .showtime-opt.low .so-avail {
+        color: var(--gold);
+      }
+      .showtime-opt.full .so-avail {
+        color: var(--primary);
+      }
+
+      /* Seat map */
+      .seatmap-section {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+      }
+      .seatmap-section h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-100);
+        margin-bottom: 6px;
+        text-align: center;
+      }
+      .screen {
+        background: linear-gradient(
+          180deg,
+          rgba(229, 9, 20, 0.35) 0%,
+          rgba(229, 9, 20, 0.04) 100%
+        );
+        border-radius: 50% 50% 0 0/20px 20px 0 0;
+        height: 36px;
+        margin: 16px 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        color: var(--text-400);
+        letter-spacing: 4px;
+        text-transform: uppercase;
+      }
+      .seat-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .seat-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .row-lbl {
+        width: 22px;
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-400);
+      }
+      .seat {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px 6px 3px 3px;
+        border: 1.5px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--text-400);
+        cursor: pointer;
+        transition: var(--ease-med);
+        background: var(--bg-600);
+        position: relative;
+      }
+      .seat::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        left: 25%;
+        right: 25%;
+        height: 3px;
+        background: inherit;
+        border-radius: 0 0 2px 2px;
+      }
+      .seat:hover:not(.sold):not(.taken) {
+        border-color: var(--primary);
+        background: rgba(229, 9, 20, 0.15);
+        color: var(--primary);
+        transform: scale(1.08);
+      }
+      .seat.selected {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+        transform: scale(1.08);
+        box-shadow: 0 0 10px var(--primary-glow);
+      }
+      .seat.vip {
+        background: rgba(245, 197, 24, 0.08);
+        border-color: rgba(245, 197, 24, 0.3);
+        color: var(--gold);
+      }
+      .seat.vip.selected {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #000;
+        box-shadow: 0 0 10px rgba(245, 197, 24, 0.4);
+      }
+      .seat.couple {
+        width: 72px;
+        background: rgba(255, 100, 150, 0.08);
+        border-color: rgba(255, 100, 150, 0.3);
+        color: #ff6496;
+        font-size: 0.6rem;
+      }
+      .seat.couple.selected {
+        background: #ff6496;
+        border-color: #ff6496;
+        color: #fff;
+        box-shadow: 0 0 10px rgba(255, 100, 150, 0.4);
+      }
+      .seat.sold {
+        background: var(--bg-500);
+        border-color: var(--bg-500);
+        color: var(--text-400);
+        cursor: not-allowed;
+        opacity: 0.4;
+      }
+      .aisle {
+        width: 14px;
+      }
+      .seat-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 20px;
+        justify-content: center;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: var(--text-300);
+      }
+      .legend-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px 4px 2px 2px;
+        border: 1.5px solid;
+      }
+
+      /* Sidebar */
+      .booking-sidebar {
+        position: sticky;
+        top: 140px;
+        height: fit-content;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .summary-card {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      .summary-hdr {
+        background: var(--primary);
+        padding: 18px 20px;
+      }
+      .summary-hdr h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 3px;
+      }
+      .summary-hdr p {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .summary-body {
+        padding: 20px;
+      }
+      .sum-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+      }
+      .sum-lbl {
+        color: var(--text-400);
+      }
+      .sum-val {
+        color: var(--text-200);
+        font-weight: 500;
+        text-align: right;
+        max-width: 180px;
+      }
+      .divider-line {
+        height: 1px;
+        background: var(--glass-border);
+        margin: 14px 0;
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .total-lbl {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-100);
+      }
+      .total-val {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .seat-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin: 8px 0;
+        min-height: 28px;
+      }
+      .seat-tag {
+        padding: 3px 9px;
+        border-radius: var(--radius-pill);
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+      .seat-tag.normal {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-200);
+      }
+      .seat-tag.vip {
+        background: rgba(245, 197, 24, 0.15);
+        color: var(--gold);
+      }
+      .seat-tag.couple {
+        background: rgba(255, 100, 150, 0.15);
+        color: #ff6496;
+      }
+
+      /* Member discount info */
+      .member-info {
+        background: rgba(29, 185, 84, 0.07);
+        border: 1px solid rgba(29, 185, 84, 0.2);
+        border-radius: var(--radius-md);
+        padding: 12px;
+        font-size: 0.8rem;
+        color: var(--text-300);
+        margin-bottom: 12px;
+      }
+
+      /* Points section */
+      .points-section {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+      }
+      .points-section h4 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-100);
+        margin-bottom: 10px;
+      }
+      .points-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .points-input {
+        flex: 1;
+        background: var(--bg-700);
+        border: 1.5px solid var(--glass-border);
+        color: var(--text-100);
+        padding: 9px 12px;
+        border-radius: var(--radius-md);
+        font-size: 0.88rem;
+        font-family: inherit;
+      }
+      .points-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      /* Payment */
+      .payment-section {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+      }
+      .payment-section h4 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-100);
+        margin-bottom: 12px;
+      }
+      .pay-opt {
+        padding: 11px 14px;
+        background: var(--bg-600);
+        border: 1.5px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: var(--ease-fast);
+        margin-bottom: 8px;
+      }
+      .pay-opt:hover {
+        border-color: var(--primary);
+      }
+      .pay-opt.active {
+        border-color: var(--primary);
+        background: rgba(229, 9, 20, 0.08);
+      }
+      .pay-icon {
+        font-size: 1.3rem;
+      }
+      .pay-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-100);
+      }
+      .pay-sub {
+        font-size: 0.72rem;
+        color: var(--text-400);
+      }
+      .pay-check {
+        margin-left: auto;
+        color: var(--primary);
+        display: none;
+        font-weight: 700;
+      }
+      .pay-opt.active .pay-check {
+        display: block;
+      }
+      .btn-confirm {
+        width: 100%;
+        padding: 14px;
+        background: var(--grad-accent);
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        border-radius: var(--radius-md);
+        transition: var(--ease-med);
+        margin-top: 16px;
+        box-shadow: 0 4px 20px var(--primary-glow);
+      }
+      .btn-confirm:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px var(--primary-glow);
+      }
+      .btn-confirm:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      /* Success modal */
+      .success-content {
+        text-align: center;
+      }
+      .success-icon {
+        font-size: 4rem;
+        margin-bottom: 12px;
+      }
+      .bk-code {
+        display: inline-block;
+        padding: 14px 28px;
+        background: rgba(229, 9, 20, 0.1);
+        border: 2px dashed var(--primary);
+        border-radius: var(--radius-lg);
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--primary);
+        letter-spacing: 4px;
+        margin: 12px 0;
+      }
+      .qr-box {
+        background: #fff;
+        padding: 16px;
+        border-radius: var(--radius-md);
+        width: 140px;
+        height: 140px;
+        margin: 12px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+      }
+      .ticket-summary {
+        background: var(--bg-800);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        margin: 14px 0;
+        text-align: left;
+        font-size: 0.82rem;
+        color: var(--text-300);
+      }
+      .ticket-summary p {
+        margin-bottom: 5px;
+      }
+      .ticket-summary strong {
+        color: var(--text-100);
+      }
+
+      /* Hiệu ứng mờ dần khi xuất hiện khung QR */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 900px) {
+        .booking-wrap {
+          grid-template-columns: 1fr;
+        }
+        .booking-sidebar {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar scrolled" id="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">
+          <span class="logo-icon">🎬</span>
+          <span class="logo-text">CineMax</span>
+        </a>
+        <div class="nav-actions">
+          <a
+            href="my-tickets.html"
+            class="btn-outline"
+            id="myTicketsBtn"
+            style="display: none"
+            >🎟️ Vé của tôi</a
+          >
+          <span class="user-info" id="userInfo" style="display: none"></span>
+          <button class="btn-primary" id="loginBtn" onclick="openLoginModal()">
+            Đăng nhập
+          </button>
+          <button
+            class="btn-danger"
+            id="logoutBtn"
+            style="display: none"
+            onclick="logout()"
+          >
+            Đăng xuất
+          </button>
+        </div>
+        <button class="hamburger" id="hamburger">☰</button>
+      </div>
+    </nav>
+
+    <div class="steps-bar">
+      <div class="steps-inner">
+        <div class="step active" id="step1">
+          <div class="step-num">1</div>
+          <span>Chọn suất</span>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step" id="step2">
+          <div class="step-num">2</div>
+          <span>Chọn ghế</span>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step" id="step3">
+          <div class="step-num">3</div>
+          <span>Bắp Nước</span>
+        </div>
+        <div class="step-line" id="line3"></div>
+        <div class="step" id="step4">
+          <div class="step-num">4</div>
+          <span>Thanh toán</span>
+        </div>
+        <div class="step-line" id="line4"></div>
+        <div class="step" id="step5">
+          <div class="step-num">5</div>
+          <span>Xác nhận</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="booking-wrap">
+      <div>
+        <div class="movie-hdr" id="movieHdr">
+          <div class="movie-hdr-poster" id="moviePosterEl"></div>
+          <div>
+            <h2 id="movieTitleEl">Đang tải...</h2>
+            <div class="meta-chips" id="movieMetaEl"></div>
+          </div>
+        </div>
+
+        <div class="showtime-select-section" id="showtimeSection">
+          <h3>📅 Chọn suất chiếu</h3>
+          <div class="showtime-grid" id="showtimeGrid"></div>
+        </div>
+
+        <div class="seatmap-section" id="seatmapSection">
+          <div
+            id="seatmapPlaceholder"
+            style="
+              text-align: center;
+              padding: 60px 20px;
+              color: var(--text-400);
+            "
+          >
+            <div style="font-size: 3rem; margin-bottom: 12px">🪑</div>
+            <p
+              style="
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: var(--text-300);
+              "
+            >
+              Chọn suất chiếu để xem sơ đồ chỗ ngồi
+            </p>
+            <p style="font-size: 0.8rem; margin-top: 6px">
+              Bấm vào một suất chiếu ở trên ↑
+            </p>
+          </div>
+          <div id="seatmapContent" style="display: none">
+            <h3 id="seatmapTitle">Sơ đồ ghế</h3>
+            <p
+              style="
+                text-align: center;
+                font-size: 0.78rem;
+                color: var(--text-400);
+              "
+              id="seatmapSub"
+            ></p>
+            <div class="screen">🎬 &nbsp; MÀN ẢNH</div>
+            <div class="seat-grid" id="seatGrid"></div>
+            <div class="seat-legend">
+              <div class="legend-item">
+                <div
+                  class="legend-box"
+                  style="
+                    background: var(--bg-600);
+                    border-color: var(--glass-border);
+                  "
+                ></div>
+                Trống
+              </div>
+              <div class="legend-item">
+                <div
+                  class="legend-box"
+                  style="
+                    background: rgba(245, 197, 24, 0.1);
+                    border-color: rgba(245, 197, 24, 0.3);
+                  "
+                ></div>
+                VIP (×1.5)
+              </div>
+              <div class="legend-item">
+                <div
+                  class="legend-box"
+                  style="
+                    background: rgba(255, 100, 150, 0.1);
+                    border-color: rgba(255, 100, 150, 0.3);
+                  "
+                ></div>
+                Couple (×2.0)
+              </div>
+              <div class="legend-item">
+                <div
+                  class="legend-box"
+                  style="
+                    background: var(--primary);
+                    border-color: var(--primary);
+                  "
+                ></div>
+                Đã chọn
+              </div>
+              <div class="legend-item">
+                <div
+                  class="legend-box"
+                  style="
+                    background: var(--bg-500);
+                    border-color: var(--bg-500);
+                    opacity: 0.4;
+                  "
+                ></div>
+                Đã bán
+              </div>
+            </div>
+          </div>
+          <button class="btn-confirm" id="btnGoToCombo" style="display: none; margin-top: 24px;" onclick="goToCombo()">🍿 Tiếp tục chọn Bắp Nước</button>
+        </div>
+
+        <div class="combo-section" id="comboSection" style="display: none; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 24px; margin-top: 24px;">
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-100); margin-bottom: 16px; text-align: center;">🍿 Chọn Bắp Nước (Mua online tiết kiệm 15%)</h3>
+          <div class="combo-list" style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="combo-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-600); border: 1px solid var(--glass-border); border-radius: 8px;">
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="font-size: 2rem;">🍿🥤</div>
+                <div>
+                  <div style="font-weight: 700; color: var(--text-100); font-size: 0.9rem;">Combo Solo</div>
+                  <div style="font-size: 0.75rem; color: var(--text-400); margin-top: 4px;">1 Bắp lớn + 1 Nước ngọt lớn</div>
+                  <div style="color: var(--primary); font-weight: 700; font-size: 0.9rem; margin-top: 4px;">79,000đ</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-outline" style="padding: 4px 10px; font-size: 1rem;" onclick="updateCombo(1, -1)">-</button>
+                <span id="combo1Qty" style="font-weight: 700; width: 20px; text-align: center;">0</span>
+                <button class="btn-outline" style="padding: 4px 10px; font-size: 1rem;" onclick="updateCombo(1, 1)">+</button>
+              </div>
+            </div>
+            <div class="combo-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-600); border: 1px solid var(--glass-border); border-radius: 8px;">
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="font-size: 2rem;">🍿🥤🥤</div>
+                <div>
+                  <div style="font-weight: 700; color: var(--text-100); font-size: 0.9rem;">Combo Couple</div>
+                  <div style="font-size: 0.75rem; color: var(--text-400); margin-top: 4px;">1 Bắp lớn + 2 Nước ngọt lớn</div>
+                  <div style="color: var(--primary); font-weight: 700; font-size: 0.9rem; margin-top: 4px;">109,000đ</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-outline" style="padding: 4px 10px; font-size: 1rem;" onclick="updateCombo(2, -1)">-</button>
+                <span id="combo2Qty" style="font-weight: 700; width: 20px; text-align: center;">0</span>
+                <button class="btn-outline" style="padding: 4px 10px; font-size: 1rem;" onclick="updateCombo(2, 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn-confirm" id="btnGoToPayment" style="margin-top: 20px;" onclick="goToPayment()">💳 Tiếp tục Thanh Toán</button>
+        </div>
+      </div>
+
+      <div class="booking-sidebar">
+        <div class="summary-card">
+          <div class="summary-hdr">
+            <h3>🎟️ Đơn đặt vé</h3>
+            <p id="sumShowtime">Chọn suất chiếu để bắt đầu</p>
+          </div>
+          <div class="summary-body">
+            <div class="sum-row">
+              <span class="sum-lbl">Phim</span>
+              <span class="sum-val" id="sumMovie">—</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Ngày chiếu</span>
+              <span class="sum-val" id="sumDate">—</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Giờ chiếu</span>
+              <span class="sum-val" id="sumTime">—</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Phòng</span>
+              <span class="sum-val" id="sumRoom">—</span>
+            </div>
+            <div class="divider-line"></div>
+            <div class="sum-row" style="margin-bottom: 4px">
+              <span class="sum-lbl">Ghế đã chọn</span>
+            </div>
+            <div class="seat-tags" id="seatTagsEl">
+              <span style="font-size: 0.78rem; color: var(--text-400)"
+                >Chưa chọn ghế</span
+              >
+            </div>
+            <div class="divider-line"></div>
+            <div class="sum-row" id="subtotalRow" style="display: none">
+              <span class="sum-lbl">Tạm tính vé</span>
+              <span class="sum-val" id="subtotalVal">—</span>
+            </div>
+            <div class="sum-row" id="comboRow" style="display: none">
+              <span class="sum-lbl">Combo Bắp Nước</span>
+              <span class="sum-val" id="comboVal">—</span>
+            </div>
+            <div class="sum-row" id="memberDiscRow" style="display: none">
+              <span class="sum-lbl" id="memberDiscLbl">Giảm hạng</span>
+              <span class="sum-val" style="color: #1db954" id="memberDiscVal"
+                >—</span
+              >
+            </div>
+            <div class="sum-row" id="pointsDiscRow" style="display: none">
+              <span class="sum-lbl">Đổi điểm</span>
+              <span class="sum-val" style="color: #1db954" id="pointsDiscVal"
+                >—</span
+              >
+            </div>
+            <div class="total-row">
+              <span class="total-lbl">Tổng tiền</span>
+              <span class="total-val" id="totalVal">0đ</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-info" id="memberInfoBox" style="display: none"></div>
+
+        <div class="points-section" id="pointsSection" style="display: none">
+          <h4>⭐ Đổi điểm tích lũy</h4>
+          <p
+            style="
+              font-size: 0.78rem;
+              color: var(--text-400);
+              margin-bottom: 10px;
+            "
+          >
+            Bạn có
+            <strong id="availPoints" style="color: var(--gold)">0</strong> điểm
+            (= <span id="availPointsVnd"></span>)
+          </p>
+          <div class="points-row">
+            <input
+              type="number"
+              id="pointsInput"
+              class="points-input"
+              placeholder="Nhập số điểm"
+              min="0"
+              oninput="calcTotal()"
+            />
+            <button
+              class="btn-primary"
+              style="padding: 9px 14px; font-size: 0.82rem"
+              onclick="applyMaxPoints()"
+            >
+              Dùng tối đa
+            </button>
+          </div>
+        </div>
+
+        <div class="payment-section" id="paymentSection" style="display: none">
+          <h4>💳 Phương thức thanh toán</h4>
+          <div
+            class="pay-opt active"
+            id="pay_vnpay"
+            onclick="selectPay('vnpay')"
+          >
+            <span class="pay-icon">🏦</span>
+            <div>
+              <div class="pay-name">VNPay QR</div>
+              <div class="pay-sub">Quét mã QR thanh toán</div>
+            </div>
+            <span class="pay-check">✓</span>
+          </div>
+          <div class="pay-opt" id="pay_momo" onclick="selectPay('momo')">
+            <span class="pay-icon">💜</span>
+            <div>
+              <div class="pay-name">Ví MoMo</div>
+              <div class="pay-sub">Thanh toán không tiền mặt</div>
+            </div>
+            <span class="pay-check">✓</span>
+          </div>
+          <div class="pay-opt" id="pay_zalopay" onclick="selectPay('zalopay')">
+            <span class="pay-icon">💙</span>
+            <div>
+              <div class="pay-name">ZaloPay</div>
+              <div class="pay-sub">Liên kết thẻ ngân hàng</div>
+            </div>
+            <span class="pay-check">✓</span>
+          </div>
+          <div class="pay-opt" id="pay_card" onclick="selectPay('card')">
+            <span class="pay-icon">💳</span>
+            <div>
+              <div class="pay-name">Thẻ ngân hàng</div>
+              <div class="pay-sub">Phí dịch vụ 1.5%</div>
+            </div>
+            <span class="pay-check">✓</span>
+          </div>
+          <div class="pay-opt" id="pay_cash" onclick="selectPay('cash')">
+            <span class="pay-icon">💵</span>
+            <div>
+              <div class="pay-name">Tiền mặt</div>
+              <div class="pay-sub">Thanh toán tại quầy rạp</div>
+            </div>
+            <span class="pay-check">✓</span>
+          </div>
+          <button
+            class="btn-confirm"
+            id="btnConfirm"
+            disabled
+            onclick="confirmBooking()"
+          >
+            🎟️ Xác nhận đặt vé
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="qrPaymentBox"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 99999;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        style="
+          background: #1a1d24;
+          padding: 30px;
+          border-radius: 16px;
+          width: 360px;
+          text-align: center;
+          position: relative;
+          border: 1px solid #2e333d;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+          animation: fadeIn 0.2s ease-out;
+        "
+      >
+        <span
+          onclick="closeQRModal()"
+          style="
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1.5rem;
+            font-weight: bold;
+          "
+          >&times;</span
+        >
+        <h3
+          style="
+            margin-top: 0;
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 1.25rem;
+          "
+        >
+          Quét Mã QR
+        </h3>
+        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 20px">
+          Vui lòng dùng ứng dụng để quét mã thanh toán
+        </p>
+
+        <div
+          style="
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 20px;
+            background: #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+          "
+        >
+          <img
+            id="qrPaymentImg"
+            src=""
+            alt="Mã QR Chuyển Khoản"
+            style="width: 100%; height: 100%; object-fit: contain"
+          />
+        </div>
+
+        <p
+          style="
+            font-size: 0.78rem;
+            color: #f5c518;
+            margin-top: 12px;
+            font-weight: 500;
+            line-height: 1.4;
+          "
+        >
+          ⏳ Hệ thống tự động đồng bộ ngay lập tức sau khi bạn hoàn tất thanh
+          toán trên thiết bị di động.
+        </p>
+        <button
+          onclick="forcePaymentSuccess()"
+          style="
+            margin-top: 15px;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+          "
+        >
+          ✅ Tôi đã thanh toán
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+      <div class="modal" style="max-width: 500px">
+        <div class="success-content">
+          <div class="success-icon">🎉</div>
+          <h2 style="color: var(--text-100); margin-bottom: 6px">
+            Đặt vé thành công!
+          </h2>
+          <p style="color: var(--text-400); font-size: 0.88rem">
+            Mã đặt chỗ của bạn
+          </p>
+          <div class="bk-code" id="bkCodeDisplay"></div>
+
+          <div
+            class="qr-box"
+            style="
+              background: #fff;
+              padding: 10px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <img
+              id="ticketQrImg"
+              src=""
+              alt="Mã QR Vé"
+              style="width: 100%; height: 100%; object-fit: contain"
+            />
+          </div>
+
+          <p style="font-size: 0.75rem; color: var(--text-400)">
+            Quét QR tại cổng vào – hoặc xuất trình mã bên trên
+          </p>
+          <div class="ticket-summary" id="successSummary"></div>
+          <div style="display: flex; gap: 10px; margin-top: 16px">
+            <a
+              href="my-tickets.html"
+              class="btn-primary"
+              style="flex: 1; justify-content: center; padding: 12px"
+              >🎟️ Xem vé của tôi</a
+            >
+            <a
+              href="index.html"
+              class="btn-outline"
+              style="flex: 1; justify-content: center; padding: 12px"
+              >🏠 Trang chủ</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeLoginModal()">✕</button>
+        <div class="modal-tabs">
+          <button
+            class="tab-btn active"
+            id="loginTab"
+            onclick="switchTab('login')"
+          >
+            Đăng nhập
+          </button>
+          <button
+            class="tab-btn"
+            id="registerTab"
+            onclick="switchTab('register')"
+          >
+            Đăng ký
+          </button>
+        </div>
+
+        <div id="loginForm">
+          <h2 class="modal-title">Đăng nhập để đặt vé 🎟️</h2>
+          <div class="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="your@email.com"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label>Mật khẩu</label>
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="loginPassword"
+                placeholder="••••••••"
+                class="form-input"
+              />
+              <button
+                class="toggle-pw"
+                onclick="togglePassword('loginPassword')"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+          <div id="loginError" class="error-msg"></div>
+          <button class="btn-submit" onclick="handleLogin()">Đăng nhập</button>
+          <div class="divider"><span>demo</span></div>
+          <div style="display: flex; gap: 8px; justify-content: center">
+            <button
+              class="demo-btn"
+              onclick="fillDemo('an.tran@gmail.com', '123456')"
+            >
+              👤 Khách
+            </button>
+            <button
+              class="demo-btn"
+              onclick="fillDemo('admin@cinema.vn', 'admin123')"
+            >
+              🛠️ Admin
+            </button>
+          </div>
+        </div>
+
+        <div id="registerForm" style="display: none">
+          <h2 class="modal-title">Tạo tài khoản ✨</h2>
+          <div class="form-group">
+            <label>Họ tên</label>
+            <input
+              type="text"
+              id="regName"
+              placeholder="Nguyễn Văn A"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              id="regEmail"
+              placeholder="email"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label>SĐT</label>
+            <input
+              type="tel"
+              id="regPhone"
+              placeholder="0912..."
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label>Mật khẩu</label>
+            <input
+              type="password"
+              id="regPassword"
+              placeholder="≥ 6 ký tự"
+              class="form-input"
+            />
+          </div>
+          <div id="regError" class="error-msg"></div>
+          <button class="btn-submit" onclick="handleRegister()">
+            Đăng ký ngay
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/booking.js?v=3"></script>
+  </body>
+</html>

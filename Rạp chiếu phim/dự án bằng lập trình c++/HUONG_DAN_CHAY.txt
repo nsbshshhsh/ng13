@@ -1,0 +1,26 @@
+HUONG DAN CHAY CINEMAX
+======================
+
+1) Giai nen file zip.
+2) Vao thu muc: PROJECT\du an bang lap trinh c++
+   Luu y: ten thu muc trong may co dau tieng Viet la "du an bang lap trinh c++".
+3) Bam dup file: Khoi_Dong_He_Thong.bat
+4) Web se mo o: http://localhost:8085/booking.html?movie=MV001
+
+Neu muon may khac cung Wi-Fi/LAN truy cap:
+- May chay server xem dong "LAN Access for other devices" trong cua so terminal.
+- May khac mo link dang: http://IP-CUA-MAY-CHAY-SERVER:8085/index.html
+- Vi du: http://192.168.1.39:8085/index.html
+- Neu khong vao duoc, hay cho phep python.exe trong Windows Defender Firewall hoac mo port 8085.
+
+Neu hai may khac Wi-Fi/khac mang:
+- IP 192.168.x.x khong dung duoc truc tiep.
+- Muon dung chung mot server that su can dung Tailscale, ZeroTier, ngrok hoac Cloudflare Tunnel.
+- Neu chi copy project sang tung may va chay rieng, moi may van dang nhap duoc bang data/users.csv co san, nhung du lieu khong dong bo voi nhau.
+
+Ban sua nay da:
+- Dua cau truc zip ve dang giong file ban gui: PROJECT/... thay vi PROJECT/PROJECT/...
+- Them Khoi_Dong_He_Thong.bat giong file ban be.
+- Giu lai start.bat de phong truong hop ban quen ten file.
+- Sua web/js/app.js de API khong bi tro ve localhost khi mo bang IP LAN/domain/tunnel.
+- Sua server.py de in link LAN Access.

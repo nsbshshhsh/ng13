@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vé Của Tôi - CineMax</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+    <style>
+      .tickets-page {
+        padding: 120px 24px 80px;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .page-header {
+        margin-bottom: 40px;
+      }
+      .page-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-100);
+      }
+      .page-header p {
+        color: var(--text-400);
+        margin-top: 8px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--bg-800);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        margin-bottom: 32px;
+        width: fit-content;
+      }
+      .tab-item {
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-400);
+        cursor: pointer;
+        transition: var(--ease-med);
+      }
+      .tab-item.active {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 4px 12px var(--primary-glow);
+      }
+
+      .ticket-card {
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 20px;
+        transition: var(--ease-med);
+      }
+      .ticket-card:hover {
+        border-color: rgba(229, 9, 20, 0.3);
+        box-shadow: var(--shadow-md);
+      }
+      .ticket-body {
+        display: flex;
+        gap: 0;
+      }
+      .ticket-left {
+        flex: 1;
+        padding: 24px;
+        border-right: 2px dashed var(--glass-border);
+        position: relative;
+      }
+      .ticket-left::before,
+      .ticket-left::after {
+        content: "";
+        position: absolute;
+        right: -12px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--bg-900);
+      }
+      .ticket-left::before {
+        top: -11px;
+      }
+      .ticket-left::after {
+        bottom: -11px;
+      }
+
+      .ticket-right {
+        padding: 24px;
+        width: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .ticket-qr {
+        width: 100px;
+        height: 100px;
+        background: #fff;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+      }
+      .ticket-qr img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
+      }
+
+      .booking-code-small {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--primary);
+        letter-spacing: 2px;
+        text-align: center;
+      }
+
+      .ticket-movie {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-100);
+        margin-bottom: 12px;
+      }
+      .ticket-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .ticket-meta-item label {
+        font-size: 0.72rem;
+        color: var(--text-400);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 2px;
+      }
+      .ticket-meta-item span {
+        font-size: 0.9rem;
+        color: var(--text-200);
+        font-weight: 600;
+      }
+
+      .ticket-seats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .ticket-seat-badge {
+        padding: 4px 10px;
+        border-radius: var(--radius-pill);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .ticket-seat-badge.normal {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-200);
+      }
+      .ticket-seat-badge.vip {
+        background: rgba(245, 197, 24, 0.15);
+        color: var(--gold);
+      }
+      .ticket-seat-badge.couple {
+        background: rgba(255, 100, 150, 0.15);
+        color: #ff6496;
+      }
+
+      .ticket-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 16px;
+        border-top: 1px solid var(--glass-border);
+      }
+      .ticket-total {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .ticket-status {
+        padding: 4px 12px;
+        border-radius: var(--radius-pill);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .ticket-status.confirmed {
+        background: rgba(29, 185, 84, 0.15);
+        color: var(--green);
+      }
+      .ticket-status.cancelled {
+        background: rgba(229, 9, 20, 0.15);
+        color: var(--primary);
+      }
+      .ticket-status.used {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-400);
+      }
+
+      .btn-cancel-ticket {
+        padding: 8px 16px;
+        border: 1.5px solid rgba(229, 9, 20, 0.3);
+        border-radius: var(--radius-pill);
+        color: var(--primary);
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: var(--ease-fast);
+      }
+      .btn-cancel-ticket:hover {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        color: var(--text-400);
+      }
+      .empty-state .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+      }
+      .empty-state h3 {
+        font-size: 1.2rem;
+        color: var(--text-300);
+        margin-bottom: 8px;
+      }
+      .empty-state p {
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+      }
+
+      /* Refund modal */
+      .refund-info {
+        background: rgba(29, 185, 84, 0.1);
+        border: 1px solid rgba(29, 185, 84, 0.3);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .refund-policy-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        padding: 6px 0;
+      }
+      .refund-policy-row .policy-label {
+        color: var(--text-400);
+      }
+      .refund-policy-row .policy-value {
+        font-weight: 600;
+        color: var(--text-100);
+      }
+      .refund-highlight {
+        color: var(--green);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar scrolled" id="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo"
+          ><span class="logo-icon">🎬</span
+          ><span class="logo-text">CineMax</span></a
+        >
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Trang chủ</a>
+          <a href="movies.html" class="nav-link">Phim</a>
+          <a href="my-tickets.html" class="nav-link active">Vé của tôi</a>
+        </div>
+        <div class="nav-actions">
+          <span class="user-info" id="userInfo" style="display: none"></span>
+          <button
+            class="btn-danger"
+            id="logoutBtn"
+            style="display: none"
+            onclick="logout()"
+          >
+            Đăng xuất
+          </button>
+          <button
+            class="btn-primary"
+            id="loginBtn"
+            onclick="window.location.href = 'index.html'"
+          >
+            Đăng nhập
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="tickets-page">
+      <div class="page-header">
+        <h1>🎟️ Vé Của Tôi</h1>
+        <p>Quản lý tất cả vé xem phim đã đặt</p>
+      </div>
+
+      <div class="tabs">
+        <div class="tab-item active" onclick="filterTickets('all', this)">
+          Tất cả
+        </div>
+        <div class="tab-item" onclick="filterTickets('confirmed', this)">
+          ✅ Sắp chiếu
+        </div>
+        <div class="tab-item" onclick="filterTickets('used', this)">
+          🎬 Đã xem
+        </div>
+        <div class="tab-item" onclick="filterTickets('cancelled', this)">
+          ❌ Đã hủy
+        </div>
+      </div>
+
+      <div id="ticketsList"></div>
+    </div>
+
+    <div class="modal-overlay" id="cancelModal">
+      <div class="modal" style="max-width: 460px">
+        <button class="modal-close" onclick="closeCancelModal()">✕</button>
+        <h2 class="modal-title">❌ Hủy Vé</h2>
+        <p style="color: var(--text-300); margin-bottom: 16px">
+          Bạn có chắc muốn hủy đơn đặt vé này?
+        </p>
+
+        <div class="refund-info">
+          <p
+            style="
+              font-weight: 700;
+              color: var(--text-100);
+              margin-bottom: 12px;
+            "
+          >
+            💰 Chính sách hoàn tiền:
+          </p>
+          <div class="refund-policy-row">
+            <span class="policy-label">Hủy trước 24h</span>
+            <span class="policy-value refund-highlight">Hoàn 100%</span>
+          </div>
+          <div class="refund-policy-row">
+            <span class="policy-label">Hủy trong 1 – 24h</span>
+            <span class="policy-value" style="color: var(--gold)"
+              >Hoàn 50%</span
+            >
+          </div>
+          <div class="refund-policy-row">
+            <span class="policy-label">Hủy dưới 1h</span>
+            <span class="policy-value" style="color: var(--primary)"
+              >Không hoàn</span
+            >
+          </div>
+        </div>
+
+        <div
+          id="refundPreview"
+          style="
+            text-align: center;
+            padding: 16px;
+            background: var(--bg-800);
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+          "
+        >
+          <p style="font-size: 0.85rem; color: var(--text-400)">
+            Số tiền dự kiến hoàn:
+          </p>
+          <p
+            style="font-size: 1.8rem; font-weight: 800; color: var(--green)"
+            id="refundAmount"
+          >
+            —
+          </p>
+          <p style="font-size: 0.75rem; color: var(--text-400)">
+            Hoàn trong 3-5 ngày làm việc
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 12px">
+          <button
+            class="btn-submit"
+            style="background: var(--primary)"
+            onclick="executeCancel()"
+          >
+            Xác nhận hủy
+          </button>
+          <button
+            class="btn-outline"
+            style="flex: 1"
+            onclick="closeCancelModal()"
+          >
+            Giữ lại vé
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer" style="margin-top: 80px">
+      <div class="container">
+        <div class="footer-bottom">
+          <p>© 2024 CineMax. Tất cả quyền được bảo lưu.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/my-tickets.js"></script>
+
+    <script>
+      // Chờ cho danh sách vé được render từ file 'my-tickets.js' vào khung '#ticketsList'
+      const observer = new MutationObserver((mutations) => {
+        // Tìm tất cả các thẻ có class là ticket-qr mà chưa được xử lý sinh mã
+        const qrContainers = document.querySelectorAll(
+          ".ticket-qr:not(.qr-generated)",
+        );
+
+        qrContainers.forEach((container) => {
+          // Lấy mã đặt chỗ nằm ngay bên cạnh khung QR (trong element .booking-code-small)
+          const bookingCodeEl = container.nextElementSibling;
+          if (
+            bookingCodeEl &&
+            bookingCodeEl.classList.contains("booking-code-small")
+          ) {
+            const bookingCode = bookingCodeEl.textContent.trim();
+
+            if (bookingCode) {
+              container.innerHTML = "";
+
+              new QRCode(container, {
+                text: bookingCode,
+                width: 100,
+                height: 100,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H,
+              });
+
+              container.classList.add("qr-generated");
+            }
+          }
+        });
+      });
+
+      const ticketsListTarget = document.getElementById("ticketsList");
+      if (ticketsListTarget) {
+        observer.observe(ticketsListTarget, { childList: true, subtree: true });
+      }
+    </script>
+  </body>
+</html>
